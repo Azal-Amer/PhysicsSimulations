@@ -14,7 +14,7 @@ from numpy import arange,array,empty
 vp.scene.title = "Modeling the motion of planets with the gravitational force"
 vp.scene.height = 600
 vp.scene.width = 800
-count = 1
+count = 10
 tolerance = 100
 # The leeway on how off the force applied can be compared to the adaquete one of that position
 radius = 10
@@ -22,7 +22,7 @@ G = 1
 
 
 star = vp.sphere(pos=vp.vector(0,0,0), radius=0.2, color=vp.color.yellow,
-               mass = 2.0*100000, momentum=vp.vector(0,0,0), make_trail=True)
+               mass = 2.0*1000, momentum=vp.vector(0,0,0), make_trail=True)
 # checker = vp.sphere(pos= vp.vector(0,0,0),radius = radius-1, color = vp.color.)
 vp.s = empty(count,vp.sphere)
 def randomCords(radius):
@@ -36,6 +36,8 @@ def randomCords(radius):
     cord_Y = random.uniform(0,math.sqrt(radius**2-(cord_X**2)))
     #Would have used the randint function with an upper bound of y = sqrt(r^2-x^2), but then that removed chances at negative points
     cord_Z = random.uniform(0,math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)))
+    # cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))
+
     if side_Z:
         cord_Z= cord_Z*-1
     if side_Y:
@@ -55,7 +57,7 @@ def momentumCalculator(p1,p2,G,radius):
     # print("---------------------------")
     # velocity = math.sqrt(2*(maxEnergy-currentGPE)/p1.mass)
     velocity =  math.sqrt(-2*G*p2.mass*((1/radius**2)-1/distance**2))
-    print("velocity: " + str(velocity) + ",   kinetic energy: " + str(maxEnergy-currentGPE) + ", maxEnergy : " + str(maxEnergy) + ", currentGPE : " + str(currentGPE))
+    # print("velocity: " + str(velocity) + ",   kinetic energy: " + str(maxEnergy-currentGPE) + ", maxEnergy : " + str(maxEnergy) + ", currentGPE : " + str(currentGPE))
 
     dHat = p1.pos / distance
     momentum = p1.mass * velocity * -dHat
@@ -95,42 +97,30 @@ def gravitationalForce(p1,p2,distance):
     #   print(F)
    return F
 t = 0
-dt = 0.00001
-# vp.graph(xtitle = "radius", ytitle = "momentum")
-# mmnt_curve =vp.gdots(color= vp.color.blue) 
+dt = 0.0001
+vp.graph(xtitle = "radius", ytitle = "momentum")
+mmnt_curve =vp.gdots(color= vp.color.blue) 
 run = True
 success= 0
 while(run):
-   start_time = time.time()
+   vp.rate(500)
+#    start_time = time.time()
     #Calculte the force using gravitationalForce function
    # star.force = gravitationalForce(star,planet1)
 
 #  vp.s[n] is a list contaning the planet objects
    for n in range(count):
        distance = vp.mag(star.pos-vp.s[n].pos)
-    #    if distance <= 9.5:
-
-    #         vp.s[n].force = gravitationalForce(vp.s[n],star,distance)
-    #         vp.s[n].momentum = vp.s[n].momentum + vp.s[n].force*dt
-    #         #    mmnt_curve.plot(distance, vp.mag(vp.s[n].momentum))
-    #         #    Momentum = impulse ( f*t)
-    #         vp.s[n].pos = vp.s[n].pos + vp.s[n].momentum/vp.s[n].mass*dt
-    #    else: 
-    #         if vp.s[n].motion == True:
-    #             vp.s[n].motion = False
-    #             vp.s[n].color = vp.color.red
-    #             success += 1
 
        vp.s[n].force = gravitationalForce(vp.s[n],star,distance)
        vp.s[n].momentum = vp.s[n].momentum + vp.s[n].force*dt
-       #    mmnt_curve.plot(distance, vp.mag(vp.s[n].momentum))
+       mmnt_curve.plot(distance, vp.mag(vp.s[n].momentum))
        #    Momentum = impulse ( f*t)
        vp.s[n].pos = vp.s[n].pos + vp.s[n].momentum/vp.s[n].mass*dt
        if distance >= 9.5: 
            vp.s[n].color = vp.color.red
-    #    elif distance <= 9.5: 
-    #        vp.s[n].color = vp.color.green 
-#    print("FPS: ", 1.0 / (time.time() - start_time)) # FPS = 1 / time to process loop
+
+   print("FPS: ", 1.0 / (time.time() - start_time)) # FPS = 1 / time to process loop
 
    t += dt
    k = vp.keysdown()
