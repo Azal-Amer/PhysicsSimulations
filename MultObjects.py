@@ -11,10 +11,10 @@ import vpython as vp
 import random
 from math import cos,sin,pi
 from numpy import arange,array,empty
-vp.scene.title = "Modeling the motion of planets with the gravitational force"
+vp.scene.title = "Modeling the motion of planets with the gravitational force"  
 vp.scene.height = 600
 vp.scene.width = 800
-count = 10
+count = 1
 tolerance = 100
 # The leeway on how off the force applied can be compared to the adaquete one of that position
 radius = 10
@@ -66,8 +66,8 @@ def momentumCalculator(p1,p2,G,radius):
 for n in range(count):
    coordinates = randomCords(radius)    
    x = coordinates[0]
-   y =coordinates[1]
-   z =coordinates[2]
+   y = coordinates[1]
+   z = coordinates[2]
    
    vp.s[n] = vp.sphere(radius=.1,pos=vp.vector(x,y,z),mass = 1, momentum = vp.vector(0,0,0), make_trail = False, motion = True)
 #    print(str(n)  + "- " + "distance : " + str(vp.mag(vp.s[n].pos)) + ", radius: " + str(radius) )
@@ -104,7 +104,7 @@ run = True
 success= 0
 while(run):
    vp.rate(500)
-#    start_time = time.time()
+   start_time = time.time()
     #Calculte the force using gravitationalForce function
    # star.force = gravitationalForce(star,planet1)
 
@@ -114,13 +114,13 @@ while(run):
 
        vp.s[n].force = gravitationalForce(vp.s[n],star,distance)
        vp.s[n].momentum = vp.s[n].momentum + vp.s[n].force*dt
-       mmnt_curve.plot(distance, vp.mag(vp.s[n].momentum))
+       mmnt_curve.plot(time.time(), vp.mag(vp.s[n].pos))
        #    Momentum = impulse ( f*t)
        vp.s[n].pos = vp.s[n].pos + vp.s[n].momentum/vp.s[n].mass*dt
        if distance >= 9.5: 
            vp.s[n].color = vp.color.red
 
-   print("FPS: ", 1.0 / (time.time() - start_time)) # FPS = 1 / time to process loop
+#    print("FPS: ", 1.0 / (time.time() - start_time)) # FPS = 1 / time to process loop
 
    t += dt
    k = vp.keysdown()
