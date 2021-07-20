@@ -3,7 +3,7 @@
 # Cache the physics calculations outside of vpython
 # - Beforehand, do a basic check for the amount of time this takes compared to the initial vpython run. 
 #   If the calculations run faster than vpython than we know that running the posisions from the file won't 
-#   increase the speed, as vpython's 3d is taking up most of the load
+#   increase the speed, as vpython's 3d is taking up most of the loads
 import time
 from math import remainder
 import math
@@ -106,8 +106,6 @@ while(run):
    vp.rate(500)
    start_time = time.time()
     #Calculte the force using gravitationalForce function
-   # star.force = gravitationalForce(star,planet1)
-
 #  vp.s[n] is a list contaning the planet objects
    for n in range(count):
        distance = vp.mag(star.pos-vp.s[n].pos)
