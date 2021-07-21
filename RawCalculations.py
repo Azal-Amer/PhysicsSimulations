@@ -18,16 +18,19 @@ class Particle:
         self.momentum= momentum
 
 path_to_script = os.path.dirname(os.path.abspath(__file__))
-count = 10000
+count = 10
 r_Count = range(count)
 tolerance = 100
-range = 3000
 # The leeway on how off the force applied can be compared to the adaquete one of that position
 radius = 10
 G = 1
+FrameCount = 30000
 # ORDER OF DATASTRUCTURE= FRAMES -> PARTICLES -> COORDINATES
 world = {"Count":count} 
+world['FrameCount']= FrameCount
+
 world['frames'] = {}
+
 star = Particle(vp.vector(0,0,0),.2,2*1000,vp.vector(0,0,0))
 
 particles = empty(count,Particle)
@@ -41,8 +44,8 @@ def randomCords(radius):
     
     cord_Y = random.uniform(0,math.sqrt(radius**2-(cord_X**2)))
     #Would have used the randint function with an upper bound of y = sqrt(r^2-x^2), but then that removed chances at negative points
-    cord_Z = random.uniform(0,math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)))
-    # cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))
+    # cord_Z = random.uniform(0,math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)))
+    cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))
 
     if side_Z:
         cord_Z= cord_Z*-1
@@ -76,8 +79,8 @@ for n in r_Count:
    z = coordinates[2]
    
    particles[n] = Particle(vp.vector(x,y,z),.1, 1, vp.vector(0,0,0))
-   momentum = momentumCalculator(particles[n],star,G,radius)
-   particles[n].momentum = momentum
+#    momentum = momentumCalculator(particles[n],star,G,radius)
+#    particles[n].momentum = momentum
 #    To modify the initial momentum vector, change the above value under vp.vector() to whatever force vector you can calculate
 
 
@@ -98,12 +101,11 @@ def gravitationalForce(p1,p2,distance):
     #   print(F)
    return F
 t = 0
-dt = 0.00001
+dt = 0.0001
 run = True
 success= 0
 i=0
 while(run):
-   
    world['frames'][i] = {}
    start_time = time.time()
    #  particles[n] is a list contaning the planet objects
@@ -117,16 +119,19 @@ while(run):
        #    Momentum = impulse ( f*t)
        particles[n].pos = particles[n].pos + particles[n].momentum/particles[n].mass*dt
 
-       world['frames'][i][n] = [particles[n].pos.x,particles[n].pos.y,particles[n].pos.x]
+    #    world['frames'][i][n] = [particles[n].pos.x,particles[n].pos.y,particles[n].pos.z]
+       world['frames'][i][n] = [format(particles[n].pos.x,'.3f'),format(particles[n].pos.y,'.3f'),format(particles[n].pos.z,'.3f')]
+
        n +=1
        if n == count: count_Run = False
    t += dt
    i += 1
    print(i)
-   if i==30000:
+   if i==FrameCount:
        run = False
+    
 # Position in vPython is a vector, need to convert to an array
-my_filename = os.path.join(path_to_script, "cache.json")
+my_filename = os.path.join(path_to_script, "blender.json")
 data = json.dumps(world, indent = 4)
 with open(my_filename, 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=4)

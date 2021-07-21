@@ -14,7 +14,7 @@ from numpy import arange,array,empty
 vp.scene.title = "Modeling the motion of planets with the gravitational force"  
 vp.scene.height = 600
 vp.scene.width = 800
-count = 1
+count = 10000
 tolerance = 100
 # The leeway on how off the force applied can be compared to the adaquete one of that position
 radius = 10
