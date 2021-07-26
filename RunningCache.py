@@ -7,7 +7,7 @@ from numpy import arange,array,empty
 
 
 #Opening the cache
-cache = open("rounded.json")
+cache = open("blender.json")
 world = {}
 
 world = json.loads(json.load(cache))
@@ -17,7 +17,7 @@ count = world['Count']
 vp.s = empty(count,vp.sphere)
 FrameCount = world['FrameCount']
 for n in range(count):
-   coordinates = (world["frames"]['0'][str(n)])
+   coordinates = (world["frames"][0][n])
    x = float(coordinates[0])
    y = float(coordinates[1])
    z = float(coordinates[2])
@@ -32,9 +32,11 @@ for n in range(count):
 for i in range(FrameCount):
     for n in range(count):
         # the x position of the particle is equal to the "frame"  'i' at the particle 'n's coordinates, at 0 in the coordinate array
-        vp.s[n].pos.x = float(world["frames"][str(i)][str(n)][0])
-        vp.s[n].pos.y = float(world["frames"][str(i)][str(n)][1])
-        vp.s[n].pos.z = float(world["frames"][str(i)][str(n)][2])
+        # vp.s[n].pos.x = float(world["frames"][str(i)][str(n)][0])
+        coordinates = world["frames"][i][n]
+        # print("the cordinates of particle" + str(n) + ' at ' + str(i) + " are : " + str(coordinates))
+        vp.s[n].pos.x = float(coordinates[0])
+        vp.s[n].pos.y = float(coordinates[1])
+        vp.s[n].pos.z = float(coordinates[2])
         if i == FrameCount-1:
             vp.s[n].color = vp.color.red
-    i = 0
