@@ -12,16 +12,15 @@ import numpy as np
 from numpy import arange,array,empty
 
 class Particle:
-    def __init__(self,pos,radius,mass,momentum):
+    def __init__(self,pos,mass,momentum):
         self.pos = pos
-        self.radius = radius
         self.mass = mass
         self.momentum= momentum
 
 path_to_script = os.path.dirname(os.path.abspath(__file__))
-count = 100
+count = 1000
 r_Count = range(count)
-tolerance = 100
+tolerance = 1
 # The leeway on how off the force applied can be compared to the adaquete one of that position
 radius = 10
 G = 1
@@ -32,7 +31,7 @@ world['FrameCount']= FrameCount
 
 world['frames'] = []
 
-star = Particle(vp.vector(0,0,0),.2,2*1000,vp.vector(0,0,0))
+star = Particle(vp.vector(0,0,0),2*1000,vp.vector(0,0,0))
 
 particles = empty(count,Particle)
 def randomCords(radius):
@@ -53,6 +52,26 @@ def randomCords(radius):
     if side_Y:
         cord_Y = cord_Y*-1
     return cord_X,cord_Y,cord_Z
+# def momentumCalculatorOLD(p1,p2,G,radius):
+#     # p1 is particle
+#     # p2 is star/ large mass
+#     # G is gravitaitonal constant
+#     # radius is the radius of the sphere 
+#     # distance is the spawned distance
+#     # dHat is the displacement vector
+#     distance = vp.mag(p1.pos)
+#     maxEnergy = -(p1.mass*G*p2.mass)/radius
+#     # GPE = mass * acceleration * height
+#     currentGPE = -(p1.mass*G*p2.mass)/distance
+#     # print("---------------------------")
+#     # velocity = math.sqrt(2*(maxEnergy-currentGPE)/p1.mass)
+#     velocity =  math.sqrt(abs(-2*G*p2.mass*((1/radius**2)-1/distance**2)))
+#     # print("velocity: " + str(velocity) + ",   kinetic energy: " + str(maxEnergy-currentGPE) + ", maxEnergy : " + str(maxEnergy) + ", currentGPE : " + str(currentGPE))
+
+#     dHat = p1.pos / distance
+#     momentum = p1.mass * velocity * -dHat
+#     return momentum
+
 def momentumCalculator(p1,p2,G,radius):
     # p1 is particle
     # p2 is star/ large mass
@@ -60,17 +79,26 @@ def momentumCalculator(p1,p2,G,radius):
     # radius is the radius of the sphere 
     # distance is the spawned distance
     # dHat is the displacement vector
-    distance = vp.mag(p1.pos)
-    maxEnergy = -(p1.mass*G*p2.mass)/radius
+    distance = p1.pos-p2.pos
     # GPE = mass * acceleration * height
-    currentGPE = -(p1.mass*G*p2.mass)/distance
     # print("---------------------------")
-    # velocity = math.sqrt(2*(maxEnergy-currentGPE)/p1.mass)
-    velocity =  math.sqrt(abs(-2*G*p2.mass*((1/radius**2)-1/distance**2)))
-    # print("velocity: " + str(velocity) + ",   kinetic energy: " + str(maxEnergy-currentGPE) + ", maxEnergy : " + str(maxEnergy) + ", currentGPE : " + str(currentGPE))
+    # az-timmy
+    A = -5.603
+    B = -21.17
+    C = 86.94
+    # Above variables are just from a fit curve of the changing momentum of the real particle
+    pos = abs(vp.mag(distance))
+    velocity =  math.sqrt(-2*G*p2.mass*((1/radius)-(1/vp.mag(distance))))
+    dHat = distance / vp.mag(distance)
+    if abs(vp.mag(distance)) <tolerance:
+        velocity = A*(pos**2) + B*pos + C
+    if abs(vp.mag(distance)) < .75:
+        dHat = -dHat
+    
+    # below is michelle
+    # velocity = math.sqrt(abs(2*G*p2.mass*((1/distance)-(1/radius))))
 
-    dHat = p1.pos / distance
-    momentum = p1.mass * velocity * -dHat
+    momentum = p1.mass * velocity * dHat
     return momentum
 
 for n in r_Count:
@@ -79,25 +107,40 @@ for n in r_Count:
    y = coordinates[1]
    z = coordinates[2]
    
-   particles[n] = Particle(vp.vector(x,y,z),.1, 1, vp.vector(0,0,0))
-   momentum = momentumCalculator(particles[n],star,G,radius)
-   particles[n].momentum = momentum
+   particles[n] = Particle(vp.vector(x,y,z), 1, vp.vector(0,0,0))
+   particles[n].momentum = momentumCalculator(particles[n],star,G,radius)
+
 #    To modify the initial momentum vector, change the above value under vp.vector() to whatever force vector you can calculate
 
+
+# def gravitationalForceOLD(p1,p2,distance):
+#    rVector = p1.pos - p2.pos 
+#    rMagnitude = vp.mag(rVector)
+#    rHat = rVector / rMagnitude
+#    # above is the direction
+  
+#    F =  - rHat * G * p1.mass * p2.mass /rMagnitude**2
+#    acceleration =( G*p2.mass)/(distance**2)
+#    maxForce = p1.mass * math.sqrt(2*acceleration*rMagnitude)
+#    currentVelocity = (abs(vp.mag(F/p1.mass)))
+#    if   ((currentVelocity > maxForce+tolerance)  or (currentVelocity < maxForce-tolerance)):
+#     #   print("trigger")
+#       F = -  rHat * math.sqrt(2*acceleration*rMagnitude) * p1.mass
+#       #DIFFERENT G'S MORON, ONE IS THE GRAVITATIONAL ACCELERATION, OTHER IS FOR PLANET
+#     #   print(F)
+#    return F
 
 def gravitationalForce(p1,p2,distance):
    rVector = p1.pos - p2.pos 
    rMagnitude = vp.mag(rVector)
    rHat = rVector / rMagnitude
    # above is the direction
-  
    F =  - rHat * G * p1.mass * p2.mass /rMagnitude**2
-   acceleration =( G*p2.mass)/(distance**2)
-   maxForce = p1.mass * math.sqrt(2*acceleration*rMagnitude)
-   currentVelocity = (abs(vp.mag(F/p1.mass)))
-   if   ((currentVelocity > maxForce+tolerance)  or (currentVelocity < maxForce-tolerance)):
-    #   print("trigger")
-      F = -  rHat * math.sqrt(2*acceleration*rMagnitude) * p1.mass
+
+   if abs(vp.mag(p1.pos)) < tolerance:
+       F = - rHat * G * p1.mass * p2.mass /(tolerance)**2
+
+
       #DIFFERENT G'S MORON, ONE IS THE GRAVITATIONAL ACCELERATION, OTHER IS FOR PLANET
     #   print(F)
    return F
@@ -117,6 +160,7 @@ while(run):
        distance = vp.mag(star.pos-particles[n].pos)
        particles[n].force = gravitationalForce(particles[n],star,distance)
        particles[n].momentum = particles[n].momentum + particles[n].force*dt
+       
        #    Momentum = impulse ( f*t)
        particles[n].pos = particles[n].pos + particles[n].momentum/particles[n].mass*dt
        j.append(float(format(particles[n].pos.x,'.3f')))
@@ -137,7 +181,7 @@ while(run):
     
 # Position in vPython is a vector, need to convert to an array
 world['frames'].pop(0)
-my_filename = os.path.join(path_to_script, "blender.json")
+my_filename = os.path.join(path_to_script, "cache.json")
 data = json.dumps(world, indent = 4)
 with open(my_filename, 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=4)

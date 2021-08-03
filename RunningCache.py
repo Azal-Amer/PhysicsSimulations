@@ -7,7 +7,7 @@ from numpy import arange,array,empty
 
 
 #Opening the cache
-cache = open("blender.json")
+cache = open("cache.json")
 world = {}
 
 world = json.loads(json.load(cache))
