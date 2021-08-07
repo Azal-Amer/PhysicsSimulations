@@ -7,7 +7,7 @@ from numpy import arange,array,empty
 
 
 #Opening the cache
-cache = open("cache.json")
+cache = open("SpeedTesting.json")
 world = {}
 
 world = json.loads(json.load(cache))
@@ -30,6 +30,7 @@ for n in range(count):
 
 #    To modify the initial momentum vector, change the above value under vp.vector() to whatever force vector you can calculate
 for i in range(FrameCount):
+    vp.rate(500)
     for n in range(count):
         # the x position of the particle is equal to the "frame"  'i' at the particle 'n's coordinates, at 0 in the coordinate array
         # vp.s[n].pos.x = float(world["frames"][str(i)][str(n)][0])
@@ -38,5 +39,5 @@ for i in range(FrameCount):
         vp.s[n].pos.x = float(coordinates[0])
         vp.s[n].pos.y = float(coordinates[1])
         vp.s[n].pos.z = float(coordinates[2])
-        if i == FrameCount-1:
+        if vp.mag(vp.s[n].pos) > 10:
             vp.s[n].color = vp.color.red

@@ -7,10 +7,12 @@
 import time
 from math import remainder
 import math
+import numpy as np
 import vpython as vp
 import random,os,csv
 from math import cos,sin,pi
 from numpy import arange,array,empty
+
 vp.scene.title = "Modeling the motion of planets with the gravitational force"  
 vp.scene.height = 600
 vp.scene.width = 800
@@ -37,15 +39,15 @@ def randomCords(radius):
     side_Y = bool(random.getrandbits(1))
     
      
-    cord_Y = random.uniform(0,math.sqrt(radius**2-(cord_X**2)))
+    cord_Y = random.uniform(-math.sqrt(radius**2-(cord_X**2)),math.sqrt(radius**2-(cord_X**2)))
     #Would have used the randint function with an upper bound of y = sqrt(r^2-x^2), but then that removed chances at negative points
-    cord_Z = random.uniform(0,math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)))
+    cord_Z = random.uniform(-math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)),math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)))
     # cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))
 
-    if side_Z:
-         cord_Z= cord_Z*-1
-    if side_Y:
-         cord_Y = cord_Y*-1
+    # if side_Z:
+    #      cord_Z= cord_Z*-1
+    # if side_Y:
+    #      cord_Y = cord_Y*-1
     return cord_X,cord_Y,cord_Z
 # def randomCords(r,r_s):
 #     x = random.uniform(-r,r)
@@ -62,7 +64,6 @@ def randomCords(radius):
 #     coordinates = [x,y,z]
 #     return coordinates
         
-
 def momentumCalculator(p1,p2,G,radius):
     # p1 is particle
     # p2 is star/ large mass
@@ -71,29 +72,26 @@ def momentumCalculator(p1,p2,G,radius):
     # distance is the spawned distance
     # dHat is the displacement vector
     distance = p1.pos-p2.pos
-    print(vp.mag(distance))
     # GPE = mass * acceleration * height
     # print("---------------------------")
     # az-timmy
     A = -5.603
     B = -21.17
     C = 86.94
+    distanceMag = (p1.pos[0]**2+p1.pos[1]**2+p1.pos[2]**2)
     # Above variables are just from a fit curve of the changing momentum of the real particle
-    pos = abs(vp.mag(distance))
-    velocity =  math.sqrt(-2*G*p2.mass*((1/radius)-(1/vp.mag(distance))))
-    dHat = distance / vp.mag(distance)
-    if abs(vp.mag(distance)) <tolerance:
-        velocity = A*(pos**2) + B*pos + C
-    if abs(vp.mag(distance)) < .75:
+    pos = distanceMag**.5
+    velocity =  math.sqrt(-2*G*p2.mass*((1/radius)-(distanceMag**-.5)))
+    dHat = distance / distanceMag
+    if abs(distanceMag) <tolerance:
+        velocity = A*(distanceMag) + B*pos + C
+    if abs(distanceMag**.5) < .75:
         dHat = -dHat
     
     # below is michelle
     # velocity = math.sqrt(abs(2*G*p2.mass*((1/distance)-(1/radius))))
 
     momentum = p1.mass * velocity * dHat
-
-            
-
     return momentum
 
 for n in range(count):
@@ -102,13 +100,9 @@ for n in range(count):
     y = coordinates[1]
     z = coordinates[2]
     start = random.randint(0,FrameCount/3)
-    vp.s[n] = vp.sphere(radius=.1,pos=vp.vector(x,y,z),mass = 1, momentum = vp.vector(0,0,0), make_trail = False, motion = True,startFrame = start)
-        #  print(str(n)  + "- " + "distance : " + str(vp.mag(vp.s[n].pos)) + ", radius: " + str(radius) )
+    vp.s[n] = vp.sphere(radius=.1,pos=vp.vector(x,y,z),mass = 1, momentum = 0, make_trail = False, motion = True,startFrame = start)
 
     momentum = momentumCalculator(vp.s[n],star,G,radius)
-
-
-    vp.s[n].momentum = momentum
     
 # for n in range(count):
 
@@ -116,56 +110,61 @@ for n in range(count):
 #     vp.s[n] = vp.sphere(radius=.1,pos=vp.vector(0,((n)/10)+.1,0),mass = 1, momentum = vp.vector(0,0,0), make_trail = False, motion = True)
 #     # vp.s[n] = vp.sphere(radius=.1,pos=vp.vector(0,radius,0),mass = 1, momentum = vp.vector(0,0,0), make_trail = False, motion = True)
 
-#     #     print(str(n)  + "- " + "distance : " + str(vp.mag(vp.s[n].pos)) + ", radius: " + str(radius) )
 
 
 #     vp.s[n].momentum = momentumCalculator(vp.s[n],star,G,radius)
 #     #     To modify the initial momentum vector, change the above value under vp.vector() to whatever force vector you can calculate
 
 
-def gravitationalForce(p1,p2,distance):
-   rVector = p1.pos - p2.pos 
-   rMagnitude = vp.mag(rVector)
-   rHat = rVector / rMagnitude
-   # above is the direction
+def gravitationalForce(p1,p2):
+    rVector = p1.pos - p2.pos 
+    #rMagnitude = vp.mag(rVector)
+    rMagnitude = ((rVector.x**2) + (rVector.y**2) + (rVector.z**2))
+    rHat = rVector / math.sqrt(rMagnitude)
+    # print("self calc: " + str(rHat) + " vs vPython : " + str(rVector/ vp.mag(rVector)))
 
-   if abs(vp.mag(p1.pos)) < tolerance:
-       F = - rHat * G * p1.mass * p2.mass /(tolerance)**2
-   else:
-       F =  - rHat * G * p1.mass * p2.mass /rMagnitude**2
+    # above is the direction
+
+    if abs(vp.mag(p1.pos)) < tolerance:
+        F_i = - rHat * G * p1.mass * p2.mass /(tolerance)**2
+    else:
+        F_i =  - rHat * G * p1.mass * p2.mass /rMagnitude
+    F = [F_i.x,F_i.y,F_i.z]
+    F = np.array(F)
 
       #DIFFERENT G'S MORON, ONE IS THE GRAVITATIONAL ACCELERATION, OTHER IS FOR PLANET
-    #   print(F)
-   return F
+      
+    return F
 t = 0
 dt = 0.0001
-
 run = True
 success= 0
-print("OVER HERE" + str(-2*G*star.mass))
 i = 0
-print(points)
 while(True):
+    start_time = time.time()
     #Calculte the force using gravitationalForce function
     #  vp.s[n] is a list contaning the planet objects
+    vp.rate(500)
     for n in range(count):
 
         if vp.s[n].motion == True:
             distance = vp.mag(star.pos-vp.s[n].pos)
-            vp.s[n].force = gravitationalForce(vp.s[n],star,distance)
+            vp.s[n].force = gravitationalForce(vp.s[n],star)
             dHat = (star.pos-vp.s[n].pos) / (distance)
             vp.s[n].momentum = vp.s[n].momentum + vp.s[n].force*dt
+            impulse = vp.s[n].momentum/vp.s[n].mass*dt
+            vp.s[n].pos = vp.s[n].pos + vp.vector(impulse[0],impulse[1],impulse[2])
+            # This change from using vPython less was done soley for testing and full removal of vpython from other code. 1x3 vectors implementation functional
 
-            vp.s[n].pos = vp.s[n].pos + vp.s[n].momentum/vp.s[n].mass*dt
 
-
-            if vp.mag(vp.s[n].momentum)<.1:
-                vp.s[n].color= vp.color.red
-                vp.s[n].motion = False
-                print("Particle number " + str(n) + " had a final position of " + str(vp.mag(vp.s[n].pos)))
-                mmnt_curve.plot(n,vp.mag(vp.s[n].pos))
-                points.append([n,abs(vp.mag(vp.s[n].pos))])
+            # if vp.mag(vp.s[n].momentum)<.1:
+            #     vp.s[n].color= vp.color.red
+            #     vp.s[n].motion = False
+            #     print("Particle number " + str(n) + " had a final position of " + str(vp.mag(vp.s[n].pos)))
+            #     mmnt_curve.plot(n,vp.mag(vp.s[n].pos))
+            #     points.append([n,abs(vp.mag(vp.s[n].pos))])
     i +=1
+    # print("FPS: ", 1.0 / (time.time() - start_time))
     t += dt
     k = vp.keysdown()
     
