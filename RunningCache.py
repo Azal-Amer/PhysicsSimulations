@@ -27,10 +27,10 @@ for n in range(count):
    if seed == 2: randColor = vp.color.yellow
 
    vp.s[n] = vp.sphere(pos = vp.vector(x,y,z), radius = 0.1, color = randColor)
-
+print(FrameCount)
 #    To modify the initial momentum vector, change the above value under vp.vector() to whatever force vector you can calculate
 for i in range(FrameCount):
-    vp.rate(500)
+    vp.rate(50)
     for n in range(count):
         # the x position of the particle is equal to the "frame"  'i' at the particle 'n's coordinates, at 0 in the coordinate array
         # vp.s[n].pos.x = float(world["frames"][str(i)][str(n)][0])
@@ -39,5 +39,5 @@ for i in range(FrameCount):
         vp.s[n].pos.x = float(coordinates[0])
         vp.s[n].pos.y = float(coordinates[1])
         vp.s[n].pos.z = float(coordinates[2])
-        if vp.mag(vp.s[n].pos) > 10:
-            vp.s[n].color = vp.color.red
+
+    
