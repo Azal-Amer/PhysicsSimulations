@@ -11,7 +11,7 @@ cache = open("SpeedTesting.json")
 world = {}
 
 world = json.loads(json.load(cache))
-star = vp.sphere(pos=vp.vector(0,0,0), radius=0.2, color=vp.color.yellow,
+star = vp.sphere(pos=vp.vector(0,0,0), radius=0.01, color=vp.color.yellow,
                mass = 2.0*1000, momentum=vp.vector(0,0,0), make_trail=True)
 count = world['Count']
 vp.s = empty(count,vp.sphere)
@@ -30,7 +30,7 @@ for n in range(count):
 print(FrameCount)
 #    To modify the initial momentum vector, change the above value under vp.vector() to whatever force vector you can calculate
 for i in range(FrameCount):
-    vp.rate(50)
+    vp.rate(2)
     for n in range(count):
         # the x position of the particle is equal to the "frame"  'i' at the particle 'n's coordinates, at 0 in the coordinate array
         # vp.s[n].pos.x = float(world["frames"][str(i)][str(n)][0])
@@ -39,5 +39,6 @@ for i in range(FrameCount):
         vp.s[n].pos.x = float(coordinates[0])
         vp.s[n].pos.y = float(coordinates[1])
         vp.s[n].pos.z = float(coordinates[2])
+
 
     
