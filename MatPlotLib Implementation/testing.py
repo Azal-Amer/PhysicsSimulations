@@ -8,16 +8,13 @@ fig = plt.figure()
 ax = p3.Axes3D(fig)
 # cache = open ("C:\\Users\\amer_\\OneDrive - Greenhill School\\Documents\\GitHub\\PhysicsSimulations\\MatPlotLib Implementation\\rounded.json")
 cache = open ("C:\\Users\\amer_\\OneDrive - Greenhill School\\Documents\\GitHub\\PhysicsSimulations\\blender.json")
+world = json.loads(json.load(cache))
+data = world['frames']
+
 
 mpl.rcParams['animation.ffmpeg_path'] = r'C:\\FFmpeg\\bin\\ffmpeg.exe'
-world = {}
-
-world = json.loads(json.load(cache))
-world
-
 
 # data = Gen_RandPrtcls(n_particles=10, n_iterations=3)
-data = world['frames']
 
 
 

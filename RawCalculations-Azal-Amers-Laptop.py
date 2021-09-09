@@ -148,7 +148,6 @@ def f(particles):
 if __name__ == '__main__':
     with Pool(processes) as p:
         
-        calculatedPositions = []
         # multiprocessing outputs an array, with each of the outputs from a process being placed in its correcponding index
 
         frames = p.map(f,particles)
