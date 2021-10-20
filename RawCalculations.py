@@ -81,8 +81,7 @@ def momentumCalculator(p1,p2,G,radius):
     dHat = distance / distanceMag
     if abs(distanceMag) <tolerance:
         velocity = A*(pos**2) + B*pos + C
-    if abs(distanceMag) < .75:
-        dHat = -dHat
+
     
     # below is michelle
     # velocity = math.sqrt(abs(2*G*p2.mass*((1/distance)-(1/radius))))
