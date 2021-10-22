@@ -12,16 +12,23 @@ import vpython as vp
 import random,os,csv
 from math import cos,sin,pi
 from numpy import arange,array,empty
+import importlib.util
+
+spec = importlib.util.spec_from_file_location("RandomMB", "Gas Dynamics\\randomMB.py")
+gas = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(gas)
 
 vp.scene.title = "Modeling the motion of planets with the gravitational force"  
 vp.scene.height = 600
 vp.scene.width = 800
-count = 1000
+count = 10
 tolerance = 1
 # The leeway on how off the force applied can be compared to the adaquete one of that position
 radius = 10
 inner_Radius = 3
 FrameCount = 30000
+velocityMB = gas.randomMB(40,count)[0]
+
 vp.graph(xtitle = "distance", ytitle = "momentum")
 mmnt_curve =vp.gdots(color= vp.color.blue) 
 G = 1
@@ -33,12 +40,8 @@ star = vp.sphere(pos=vp.vector(0,0,0), radius=0.2, color=vp.color.yellow,
                     mass = 2.0*1000, momentum=vp.vector(0,0,0), make_trail=True)
 # checker = vp.sphere(pos= vp.vector(0,0,0),radius = radius-1, color = vp.color.)
 vp.s = empty(count,vp.sphere)
-def randomCordsOLD(radius):
+def randomCords(radius):
     cord_X = random.uniform(-radius,radius)
-    side_Z = bool(random.getrandbits(1))
-    side_Y = bool(random.getrandbits(1))
-    
-     
     cord_Y = random.uniform(-math.sqrt(radius**2-(cord_X**2)),math.sqrt(radius**2-(cord_X**2)))
     #Would have used the randint function with an upper bound of y = sqrt(r^2-x^2), but then that removed chances at negative points
     cord_Z = random.uniform(-math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)),math.sqrt(abs(radius**2-cord_X**2-cord_Y**2)))
@@ -49,24 +52,19 @@ def randomCordsOLD(radius):
     # if side_Y:
     #      cord_Y = cord_Y*-1
     return cord_X,cord_Y,cord_Z
+def vectorSplit(radius):
+     cord_X = random.uniform(-radius,radius)
+     cord_Y = random.uniform(-math.sqrt(radius**2-(cord_X**2)),math.sqrt(radius**2-(cord_X**2)))
+     #Would have used the randint function with an upper bound of y = sqrt(r^2-x^2), but then that removed chances at negative points
+     cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))*random.choice([-1,1])
+     # cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))
+     return cord_X,cord_Y,cord_Z
 # Above implementation, while effective, had a non-uniform distribution of points, biased toward the outside
-def randomCords(radius):
-    u = random.uniform(0,1)
-    v = random.uniform(0,1)
-    theta = u * 2.0 * math.pi
-    phi = math.acos(2.0 * v - 1.0)
-    r = (random.uniform(0,1))**(1/3)
-    sinTheta = math.sin(theta)
-    cosTheta = math.cos(theta)
-    sinPhi = math.sin(phi)
-    cosPhi = math.cos(phi)
-    x = r * sinPhi * cosTheta
-    y = r * sinPhi * sinTheta
-    z = r * cosPhi
-    return x*radius,y*radius,z*radius
+
 # New random point grabber rewritten from https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
 # Seemed to be a similar concept to ray tracing
 # This implementation works in a polar system, to read more about it, look here https://mathworld.wolfram.com/SpherePointPicking.html
+
 
 
 def momentumCalculator(p1,p2,G,radius):
@@ -78,34 +76,37 @@ def momentumCalculator(p1,p2,G,radius):
     # dHat is the displacement vector
     distance = p1.pos-p2.pos
     # GPE = mass * acceleration * height
+    # print("---------------------------")
     # az-timmy
     A = -5.603
     B = -21.17
     C = 86.94
+    distanceMag = math.sqrt(p1.pos.x**2+p1.pos.y**2+p1.pos.z**2)
     # Above variables are just from a fit curve of the changing momentum of the real particle
-    pos = abs(vp.mag(distance))
-    velocity =  math.sqrt(-2*G*p2.mass*((1/radius)-(1/vp.mag(distance))))
-    dHat = distance / vp.mag(distance)
-
+    pos = abs(distanceMag)
+    velocity =  math.sqrt(-2*G*p2.mass*((1/radius)- (1/distanceMag)))
+    dHat = distance / distanceMag
+    if abs(distanceMag) <tolerance:
+        velocity = A*(pos**2) + B*pos + C
+    sign = random.randint(0,1)
+    if(sign == 1): sign = -1
+    if(sign == 0):sign = 1
     
-    # below is michelle
-    # velocity = math.sqrt(abs(2*G*p2.mass*((1/distance)-(1/radius))))
-
-    momentum = - p1.mass * velocity * dHat 
-
-            
+    momentum = sign*p1.mass * velocity * dHat
 
     return momentum
 
+  
 for n in range(count):
+    randomVelocityMBIndex = np.random.random_integers(0,count-1)
     coordinates = randomCords(radius)     
     x = coordinates[0]
     y = coordinates[1]
     z = coordinates[2]
     start = random.randint(0,FrameCount/3)
-    vp.s[n] = vp.sphere(radius=.1,pos=vp.vector(x,y,z),mass = 1, momentum = 0, make_trail = False, motion = True,startFrame = start)
+    vp.s[n] = vp.sphere(radius=.1,pos=vp.vector(x,y,z),mass = 1, momentum = 0, make_trail = False, motion = True,startFrame = start, MB =vectorSplit(velocityMB[randomVelocityMBIndex]))
 
-    momentum = momentumCalculator(vp.s[n],star,G,radius)
+    vp.s[n].momentum = momentumCalculator(vp.s[n],star,G,radius)
     
 # for n in range(count):
 
@@ -125,16 +126,12 @@ def gravitationalForce(p1,p2):
     rMagnitude = ((rVector.x**2) + (rVector.y**2) + (rVector.z**2))
     rHat = rVector / math.sqrt(rMagnitude)
     # print("self calc: " + str(rHat) + " vs vPython : " + str(rVector/ vp.mag(rVector)))
-
     # above is the direction
-
     if abs(vp.mag(p1.pos)) < tolerance:
         F_i = - rHat * G * p1.mass * p2.mass /(tolerance)**2
     else:
         F_i =  - rHat * G * p1.mass * p2.mass /rMagnitude
     F = [F_i.x,F_i.y,F_i.z]
-    F = np.array(F)
-
       #DIFFERENT G'S MORON, ONE IS THE GRAVITATIONAL ACCELERATION, OTHER IS FOR PLANET
       
     return F
