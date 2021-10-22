@@ -7,7 +7,7 @@ from numpy import arange,array,empty
 
 
 #Opening the cache
-cache = open("Gas.json")
+cache = open("Blender Implementation\Sliced.json")
 world = {}
 
 world = json.loads(json.load(cache))
@@ -30,6 +30,7 @@ for n in range(count):
 print(FrameCount)
 #    To modify the initial momentum vector, change the above value under vp.vector() to whatever force vector you can calculate
 for i in range(FrameCount):
+    print(i)
     for n in range(count):
         # the x position of the particle is equal to the "frame"  'i' at the particle 'n's coordinates, at 0 in the coordinate array
         # vp.s[n].pos.x = float(world["frames"][str(i)][str(n)][0])

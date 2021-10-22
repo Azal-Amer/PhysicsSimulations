@@ -1,4 +1,3 @@
-import bpy
 import random
 import math
 import bpy
@@ -9,7 +8,7 @@ from math import cos,sin,pi
 from numpy import arange,array,empty
 #how many cubes you want to add
 
-cache = open("C:\\Users\\amer_\\OneDrive - Greenhill School\\Documents\\GitHub\\PhysicsSimulations\\dummy.json")
+cache = open("Blender Implementation\Sliced.json")
 worlds = {}
 
 worlds = json.loads(json.load(cache))

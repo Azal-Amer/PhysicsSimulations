@@ -21,7 +21,7 @@ radius = 10
 G = 1
 # The gravitational constant
 FrameCount = 30000
-interpolation = 10
+interpolation = 2
 # Every nth frame is saved. N is interpolation
 processes = 10
 m_1=5000
@@ -31,7 +31,6 @@ m_2 = 1
 # ORDER OF PROCESSING PARTICLES (1-30,000) -> NEXT PARTICLE (1-30,000)
 # Accidentally gave it a 3x speed boost lol
 velocityMB = gas.randomMB(10,count,m_2)[0]
-print(velocityMB)
 class Particle:
      def __init__(self,pos,mass,momentum,velocityMB):
           self.pos = pos
@@ -52,15 +51,7 @@ def randomCords(radius):
      # cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))
      return cord_X,cord_Y,cord_Z
     #  To Implement this for the magnitude splitter, just have the z coordinate solve for something.
-def vectorSplit(radius):
-     cord_X = random.uniform(-radius,radius)
-     cord_Y = random.uniform(-math.sqrt(radius**2-(cord_X**2)),math.sqrt(radius**2-(cord_X**2)))
-     #Would have used the randint function with an upper bound of y = sqrt(r^2-x^2), but then that removed chances at negative points
-     cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))*random.choice([-1,1])
-     # cord_Z = math.sqrt(abs(radius**2-cord_X**2-cord_Y**2))
-     return cord_X,cord_Y,cord_Z
-    #  NEED TO BIAS THE DIRECTION OF THE PARTICLES TO THE RADIUS
-# New random point grabber rewritten from https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
+
 # Seemed to be a similar concept to ray tracing
 # This implementation works in a polar system, to read more about it, look here https://mathworld.wolfram.com/SpherePointPicking.html
 def randNormtoVect(r,mag):
@@ -68,26 +59,10 @@ def randNormtoVect(r,mag):
     # v is the returned vector
     r_mag = math.sqrt(r[0]**2+r[1]**2+r[2]**2)
     r_hat = np.divide(r,r_mag)
-
-
-    print('---')
-    success = False
-    i = 0
     v[0] = random.uniform(-1,1)
     v[1] = random.uniform(-math.sqrt(1-(v[0]**2)),(math.sqrt(1-(v[0]**2))))
     v[2]= (-v[0]*r_hat[0]-v[1]*r_hat[1])/r_hat[2]
-    # while(success == False):
-        
-    #     if (((r_hat[2]**2)+4*(c))/2)>0 :
-    #         print(c)
-    #         success == True
-    #         break
-    print("the dot product is " + str(r_hat[0]*v[0]+r_hat[1]*v[1]+r_hat[2]*v[2]))
-
-    # v[2] = ((r_hat[2]+math.sqrt((r_hat[2]**2)+4*(c)))/2)
-    print(mag)
     v = np.multiply(v,mag) 
-    print(v)
     return v
 
 
@@ -113,9 +88,6 @@ def momentumCalculator(p1,p2,G,radius):
     if abs(distanceMag) <tolerance:
         velocity = A*(pos**2) + B*pos + C
 
-    
-    # below is michelle
-    # velocity = math.sqrt(abs(2*G*p2.mass*((1/distance)-(1/radius))))
     sign = random.randint(0,1)
     if(sign == 1): sign = -1
     if(sign == 0):sign = 1
